@@ -1,0 +1,13 @@
+{
+  "name": "ticket-monitor",
+  "version": "1.0.0",
+  "description": "Monitors a ticket website and sends a Telegram alert when tickets are available.",
+  "main": "monitor.js",
+  "scripts": {
+    "start": "node monitor.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "puppeteer": "^22.0.0"
+  }
+}

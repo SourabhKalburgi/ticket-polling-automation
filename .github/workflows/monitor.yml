@@ -1,0 +1,46 @@
+# .github/workflows/monitor.yml
+#
+# Runs the ticket monitor every 10 minutes, between 9AM–11PM IST.
+# IST = UTC+5:30, so:
+#   9:00 AM IST = 3:30 AM UTC
+#  11:00 PM IST = 5:30 PM UTC
+#
+# GitHub Actions cron uses UTC.
+# Every 10 mins from 03:30 to 17:30 UTC covers the full IST window.
+# (The script also does its own time-window check as a safety net.)
+
+name: Ticket Monitor
+
+on:
+  schedule:
+    - cron: "3,13,23,33,43,53 3 * * *"   # 03:03–03:53 UTC  (8:33–9:23 AM IST)
+    - cron: "*/10 4-16 * * *"             # 04:00–16:50 UTC  (9:30 AM–10:20 PM IST)
+    - cron: "0,10,20,30 17 * * *"         # 17:00–17:30 UTC  (10:30–11:00 PM IST)
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Puppeteer system dependencies
+        run: npx puppeteer browsers install chrome
+
+      - name: Run monitor
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          TARGET_URL: ${{ secrets.TARGET_URL }}
+        run: node monitor.js
